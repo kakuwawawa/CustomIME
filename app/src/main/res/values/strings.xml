@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">CustomIME</string>
+    <string name="ime_name">CustomIME</string>
+    <string name="method_name">CustomIME</string>
+</resources>
