@@ -76,9 +76,11 @@ class IMEService : InputMethodService(),
     override fun onCreateInputView(): View {
         val view = ComposeKeyboardView(this)
 
-        view.setViewTreeLifecycleOwner(this)
-        view.setViewTreeViewModelStoreOwner(this)
-        view.setViewTreeSavedStateRegistryOwner(this)
+        window?.window?.decorView?.let { decor ->
+            decor.setViewTreeLifecycleOwner(this)
+            decor.setViewTreeViewModelStoreOwner(this)
+            decor.setViewTreeSavedStateRegistryOwner(this)
+        }
 
         return view
     }
