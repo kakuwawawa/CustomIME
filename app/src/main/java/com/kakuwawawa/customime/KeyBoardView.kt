@@ -1,5 +1,6 @@
 package com.kakuwawawa.customime
 
+import androidx.annotation.FloatRange
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
@@ -9,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -22,18 +22,18 @@ import androidx.compose.ui.unit.sp
 
 //===== KeyboardLayout =====//
 @Composable
-fun KeyboardLayout(setting: List<List<List<KeyModel>>>,
+fun KeyboardLayout(keyboardLayout: List<List<KeyModel>>,
                    onClick: (KeyModel) -> Unit,
                    keyBoardState: State){
-    Row {
-        val l1Modifier = Modifier.fillMaxWidth()
-        setting.forEach { l1 ->
-            Column(modifier = l1Modifier) {
-                l1.forEach { l2 ->
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        l2.forEach { keyModel ->
-                            KeyButton(keyModel, onClick, Modifier.weight(1f))
-                        }
+    Column() {
+        keyboardLayout.forEach { row ->
+            Row(modifier = Modifier.fillMaxWidth()) {
+                row.forEach { keyModel ->
+                    if(keyModel is KeyModel.Spacer){
+                        Spacer(modifier = Modifier.weight(keyModel.space))
+                    }
+                    else{
+                        KeyButton(keyModel, onClick, Modifier.weight(1f))
                     }
                 }
             }
@@ -68,7 +68,7 @@ sealed class KeyModel{
     data class InputValue(val value: String, override val label: String): KeyModel(){
         constructor(value: String) : this(value, value)
     }
-    data class Spacer(val space: Float, override val label: String = ""): KeyModel()
+    data class Spacer(@FloatRange val space: Float, override val label: String = ""): KeyModel()
     data class CursorMove(val cursorDirection: CursorDirection, override val label: String): KeyModel()
     data class StateChange(val state: State, override val label: String): KeyModel()
 }
