@@ -83,7 +83,7 @@ class IMEService : InputMethodService(),
     override fun onCreateInputView(): View {
         val view = ComposeKeyboardView(this)
         view.onKeyEvent = ::KeyboardClickEvent
-        view.keyboardState = { mutableStateOf(this.keyboardState) }
+        view.keyboardState = { this.keyboardState }
         view.keyboardPage = { keyboardPage }
 
         window?.window?.decorView?.let { decor ->

@@ -27,7 +27,7 @@ class ComposeKeyboardView(
     context: Context
 ) : AbstractComposeView(context) {
     var onKeyEvent: (KeyModel, State) -> Unit = { keyModel, state ->  }
-    var keyboardState: () -> MutableState<State> = { mutableStateOf(State.DEFAULT) }
+    var keyboardState: () -> State = { State.DEFAULT }
     var keyboardPage: () -> Int = { 0 }
 
     @Composable

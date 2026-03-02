@@ -42,7 +42,7 @@ import kotlinx.coroutines.launch
 fun KeyboardLayout(keyboardLayout: List<List<List<KeyModel>>>,
                    index: Int,
                    onClick: (KeyModel, State) -> Unit,
-                   keyBoardState: MutableState<State>)
+                   keyBoardState: State)
     {
     val selectKeyboardLayout = keyboardLayout[index]
     Column(modifier = Modifier
@@ -84,19 +84,19 @@ private val KeyButtonModifier = Modifier
 @Composable
 fun KeyButton(
     keyModel: KeyModel,
-    keyBoardState: MutableState<State>,
+    keyBoardState: State,
     onClick: (KeyModel, State) -> Unit,
     modifier: Modifier
 ){
     Box(modifier = modifier
         .pointerInput(Unit) {
             detectTapGestures (onPress = {
-                onClick(keyModel, keyBoardState.value)
+                onClick(keyModel, keyBoardState)
                 delay(500)
                 coroutineScope {
                     val job =  launch {
                         while(isActive){
-                            onClick(keyModel, keyBoardState.value)
+                            onClick(keyModel, keyBoardState)
                             delay(50)
                         }
                     }
@@ -106,7 +106,7 @@ fun KeyButton(
             })
         }) {
         Text(
-            keyModel.nowLabel(keyBoardState.value), modifier = Modifier.padding(0.dp).align(Alignment.Center),
+            keyModel.nowLabel(keyBoardState), modifier = Modifier.padding(0.dp).align(Alignment.Center),
             fontSize = 20.sp, color = Color.Black, textAlign = TextAlign.Left, overflow = TextOverflow.Clip
         )
     }
