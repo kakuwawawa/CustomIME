@@ -4,10 +4,6 @@ import android.inputmethodservice.InputMethodService
 import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.ExtractedTextRequest
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.*
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
@@ -77,20 +73,18 @@ class IMEService : InputMethodService(),
     // ----------------------
     // Compose View
     // ----------------------
-    private var keyboardState: State by mutableStateOf(State.DEFAULT)
-    private var keyboardPage: Int by mutableIntStateOf(0)
+    lateinit var composeView: ComposeKeyboardView
 
     override fun onCreateInputView(): View {
         val view = ComposeKeyboardView(this)
         view.onKeyEvent = ::KeyboardClickEvent
-        view.keyboardState = { this.keyboardState }
-        view.keyboardPage = { keyboardPage }
 
         window?.window?.decorView?.let { decor ->
             decor.setViewTreeLifecycleOwner(this)
             decor.setViewTreeViewModelStoreOwner(this)
             decor.setViewTreeSavedStateRegistryOwner(this)
         }
+        composeView = view
 
         return view
     }
@@ -132,14 +126,14 @@ class IMEService : InputMethodService(),
             CursorDirection.LEFT -> {
                 try {
                     ic.setSelection(extracted.selectionStart - 1, extracted.selectionEnd - 1)
-                }catch(ex: Exception){
+                }catch(_: Exception){
                     ic.sendKeyEvent(android.view.KeyEvent(android.view.KeyEvent.ACTION_DOWN, android.view.KeyEvent.KEYCODE_DPAD_LEFT))
                 }
             }
             CursorDirection.RIGHT -> {
                 try{
                     ic.setSelection(extracted.selectionStart + 1, extracted.selectionEnd + 1)
-                }catch (ex: Exception){
+                }catch (_: Exception){
                     ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_RIGHT))
                 }
             }
@@ -152,7 +146,7 @@ class IMEService : InputMethodService(),
         }
     }
     fun OnStateChange(state: State){
-        this.keyboardState = state
+        composeView.changeKeyboardState(state)
     }
     fun OnDelete(delete: Delete){
         val ic = currentInputConnection ?: return
@@ -170,6 +164,6 @@ class IMEService : InputMethodService(),
         ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER))
     }
     fun OnPageChange(page: Int){
-        keyboardPage = page
+        composeView.changeKeyboardPage(page)
     }
 }

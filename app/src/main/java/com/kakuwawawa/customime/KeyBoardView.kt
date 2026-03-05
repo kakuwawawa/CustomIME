@@ -3,7 +3,6 @@ package com.kakuwawawa.customime
 import androidx.annotation.FloatRange
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,10 +17,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,12 +26,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.getValue
 
 //===== KeyboardLayout =====//
 @Composable
@@ -88,15 +83,16 @@ fun KeyButton(
     onClick: (KeyModel, State) -> Unit,
     modifier: Modifier
 ){
+    val lastState: State by rememberUpdatedState(keyBoardState)
     Box(modifier = modifier
         .pointerInput(Unit) {
             detectTapGestures (onPress = {
-                onClick(keyModel, keyBoardState)
+                onClick(keyModel, lastState)
                 delay(500)
                 coroutineScope {
                     val job =  launch {
                         while(isActive){
-                            onClick(keyModel, keyBoardState)
+                            onClick(keyModel, lastState)
                             delay(50)
                         }
                     }
