@@ -70,12 +70,6 @@ fun KeyboardLayout(keyboardLayout: List<List<List<KeyModel>>>,
     }
 }
 //===== KeyboardButton =====//
-private val KeyButtonModifier = Modifier
-    .background(Color.LightGray)
-    .border(width = 1.dp, color = Color.White)
-    .width(32.dp)
-    .height(40.dp)
-    .padding(0.dp)
 @Composable
 fun KeyButton(
     keyModel: KeyModel,
@@ -123,8 +117,9 @@ sealed class KeyModel{
     data class CursorMove(val cursorDirection: CursorDirection, val label: String): KeyModel(){
         override fun nowLabel(state: State): String = label
     }
-    data class StateChange(val state: State, val label: String): KeyModel(){
-        override fun nowLabel(state: State): String = label
+    data class StateChange(val state: State, val label: String, val modeLabel: String): KeyModel(){
+        constructor(state: State, label: String): this(state, label, label)
+        override fun nowLabel(state: State): String = if(state == this.state) modeLabel else label
     }
     data class DeleteStr(val delete: Delete, val label: String): KeyModel(){
         override fun nowLabel(state: State): String = label
@@ -135,7 +130,18 @@ sealed class KeyModel{
     data class PageChange(val page: Int, val label: String): KeyModel(){
         override fun nowLabel(state: State): String = label
     }
+    data class CodeInput(val code: Int, val label: String, val shiftLabel: String, val metaEventKind: MetaEventKind): KeyModel(){
+        constructor(code: Int, label: String) : this(code, label, label, MetaEventKind.Inheart)
+        constructor(code: Int, label: String, shiftLabel: String) : this(code, label, shiftLabel, MetaEventKind.Inheart)
+        constructor(code: Int, label: String, metaEventKind: MetaEventKind) : this(code, label, label, metaEventKind)
+        override fun nowLabel(state: State): String = if (state == State.SHIFT) { shiftLabel } else { label }
+    }
 
+}
+sealed class MetaEventKind{
+    object Inheart: MetaEventKind()
+    object Default: MetaEventKind()
+    data class State(val metaState: Int): MetaEventKind()
 }
 enum class CursorDirection{
     LEFT,

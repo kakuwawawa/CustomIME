@@ -95,8 +95,18 @@ class IMEService : InputMethodService(),
     fun KeyboardClickEvent(keyModel: KeyModel, state: State){
         when(keyModel){
             is KeyModel.InputValue -> {
-                if(state == State.SHIFT) OnInputValue(keyModel.shiftValue)
-                else OnInputValue(keyModel.value)            }
+                when(state){
+                    State.SHIFT -> OnInputValue(keyModel.shiftValue)
+                    State.DEFAULT -> OnInputValue(keyModel.value)
+                    State.ALT -> {
+                        OnInputValue(keyModel.value)
+                    }
+                    State.CTRL -> {
+                        OnInputValue(keyModel.value)
+                    }
+                    else -> { }
+                }
+            }
             is KeyModel.CursorMove -> {
                 OnCursorMove(keyModel.cursorDirection)
             }
@@ -113,6 +123,25 @@ class IMEService : InputMethodService(),
             is KeyModel.PageChange -> {
                 OnPageChange(keyModel.page)
             }
+            is KeyModel.CodeInput -> {
+                when(keyModel.metaEventKind){
+                    MetaEventKind.Inheart -> {
+                        when(state){
+                            State.DEFAULT -> OnCodeInput(keyModel.code)
+                            State.SHIFT -> OnMetaCodeInput(keyModel.code, KeyEvent.META_SHIFT_ON)
+                            State.CTRL -> OnMetaCodeInput(keyModel.code, KeyEvent.META_CTRL_ON)
+                            State.ALT -> OnMetaCodeInput(keyModel.code, KeyEvent.META_ALT_ON)
+                            else -> { }
+                        }
+                    }
+                    MetaEventKind.Default -> {
+                        OnCodeInput(keyModel.code)
+                    }
+                    is MetaEventKind.State -> {
+                        OnMetaCodeInput(keyModel.code, keyModel.metaEventKind.metaState)
+                    }
+                }
+            }
             else -> { }
         }
     }
@@ -127,7 +156,7 @@ class IMEService : InputMethodService(),
                 try {
                     ic.setSelection(extracted.selectionStart - 1, extracted.selectionEnd - 1)
                 }catch(_: Exception){
-                    ic.sendKeyEvent(android.view.KeyEvent(android.view.KeyEvent.ACTION_DOWN, android.view.KeyEvent.KEYCODE_DPAD_LEFT))
+                    ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_LEFT))
                 }
             }
             CursorDirection.RIGHT -> {
@@ -165,5 +194,18 @@ class IMEService : InputMethodService(),
     }
     fun OnPageChange(page: Int){
         composeView.changeKeyboardPage(page)
+    }
+    fun OnCodeInput(code: Int){
+        val ic = currentInputConnection ?: return
+        ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, code))
+    }
+    fun OnMetaCodeInput(code: Int, metaState: Int){
+        val ic = currentInputConnection ?: return
+        ic.sendKeyEvent(
+            KeyEvent(0,0,KeyEvent.ACTION_DOWN,code,0,metaState)
+        )
+        ic.sendKeyEvent(
+            KeyEvent(0,0,KeyEvent.ACTION_UP,code,0,metaState)
+        )
     }
 }
